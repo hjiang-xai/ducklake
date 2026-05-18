@@ -4773,3 +4773,18 @@ bool DuckLakeMetadataManager::IsEncrypted() const {
 }
 
 } // namespace duckdb
+data.data_file_id IN (
+	SELECT data_file_id FROM col_2_stats
+	WHERE (value_count IS NULL OR value_count > 0)
+	  AND (min_value IS NULL OR max_value IS NULL OR (min_value <= '42' AND max_value >= '42'))
+  )
+
+  (
+	data.data_file_id NOT IN (SELECT data_file_id FROM col_2_stats)
+	OR
+	data.data_file_id IN (
+	  SELECT data_file_id FROM col_2_stats
+	  WHERE (value_count IS NULL OR value_count > 0)
+		AND (min_value IS NULL OR max_value IS NULL OR (min_value <= '42' AND max_value >= '42'))
+	)
+  )
