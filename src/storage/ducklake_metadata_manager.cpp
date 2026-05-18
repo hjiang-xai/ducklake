@@ -1310,14 +1310,14 @@ FilterSQLResult DuckLakeMetadataManager::ConvertFilterPushdownToSQL(const Filter
 		// NOT be pruned, we cannot determine filter satisfaction without stats.
 		if (needs_value_count_guard) {
 			conditions += StringUtil::Format(
-			    "(data.data_file_id NOT IN (SELECT data_file_id FROM %s) OR "
-			    "data.data_file_id IN (SELECT data_file_id FROM %s WHERE "
-			    "(value_count IS NULL OR value_count > 0) AND (%s(%s))))",
+			    "(NOT EXISTS (SELECT 1 FROM %s s WHERE s.data_file_id = data.data_file_id) OR "
+			    "EXISTS (SELECT 1 FROM %s s WHERE s.data_file_id = data.data_file_id "
+			    "AND (value_count IS NULL OR value_count > 0) AND (%s(%s))))",
 			    cte_name, cte_name, null_checks.c_str(), filter_condition.c_str());
 		} else {
 			conditions += StringUtil::Format(
-			    "(data.data_file_id NOT IN (SELECT data_file_id FROM %s) OR "
-			    "data.data_file_id IN (SELECT data_file_id FROM %s WHERE %s(%s)))",
+			    "(NOT EXISTS (SELECT 1 FROM %s s WHERE s.data_file_id = data.data_file_id) OR "
+			    "EXISTS (SELECT 1 FROM %s s WHERE s.data_file_id = data.data_file_id AND %s(%s)))",
 			    cte_name, cte_name, null_checks.c_str(), filter_condition.c_str());
 		}
 
